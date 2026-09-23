@@ -2,3 +2,4 @@ AGENTS.md
 dist/
 __pycache__/
 .venv/
+.pytest_cache/
