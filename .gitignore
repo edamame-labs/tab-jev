@@ -3,3 +3,8 @@ dist/
 __pycache__/
 .venv/
 .pytest_cache/
+demo/data/
+demo/cache/
+demo/kev/
+.env
+demo/.env
