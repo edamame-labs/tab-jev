@@ -9,6 +9,23 @@ Jev answers on day one, with no labels. As labels arrive, tab learns from them, 
 
 Status: pre-release. The API will change.
 
+## When to use tab-jev
+
+tab-jev fits classification problems where:
+
+- the text and the table each carry part of the signal,
+- you have only a few labeled rows (dozens to a few thousand),
+- you act on the probability (approve, escalate, block).
+
+Churn, fraud and claims screening, lead scoring and ticket escalation are typical.
+
+| If... | Use instead |
+|---|---|
+| you have no labels | Jev alone |
+| the label is a judgment of the text (sentiment, intent) | Jev + calibration |
+| the text adds little | a tabular model alone |
+| you have 10k+ labels | a supervised model (TF-IDF, embeddings, fine-tuning) |
+
 ## Example: will a Kickstarter project get funded?
 
 Kaggle's [Funding Successful Projects on Kickstarter](https://www.kaggle.com/datasets/codename007/funding-successful-projects) has a short pitch (text) and campaign facts (table) for each project, and whether it reached its goal. A few rows:
