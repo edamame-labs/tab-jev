@@ -190,7 +190,7 @@ def tfidf_baseline(data: Dataset, X: pd.DataFrame, y: np.ndarray, X_test: pd.Dat
     from sklearn.pipeline import make_pipeline
     from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
-    categorical = [c for c in data.tab if X[c].dtype == object]
+    categorical = [c for c in data.tab if not pd.api.types.is_numeric_dtype(X[c])]  # object or string dtype
     numeric = [c for c in data.tab if c not in categorical]
     features = ColumnTransformer(
         [
