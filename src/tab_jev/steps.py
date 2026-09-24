@@ -74,9 +74,10 @@ class JevFeatures:
 class JevAnswer:
     """Has jev answer the target question for each row, using the row as the state.
 
-    Zero-shot by default. With shots > 0 it is few-shot: up to `shots` labeled examples, balanced
-    across classes, go into the state. `evidence` names earlier prediction steps whose probabilities
-    are added to the state; that is how tab -> jev works.
+    Zero-shot by default. With shots > 0 it is few-shot: up to `shots` labeled rows go into the state,
+    picked at random so they keep the real class balance (balanced examples pull a skewed target toward
+    the rare classes). `evidence` names earlier prediction steps whose probabilities are added to the
+    state; that is how tab -> jev works.
     """
 
     predicts = True
@@ -103,15 +104,9 @@ class JevAnswer:
         self.examples: list[dict[str, Any]] = []
 
     def fit(self, X: pd.DataFrame, outputs: Outputs, y: pd.Series, classes: list[str]) -> None:
-        rng = np.random.default_rng(self.seed)
         labels = y.to_numpy()
-        queues = {c: list(rng.permutation(np.flatnonzero(labels == c))) for c in classes}
-        picked: list[int] = []
-        while len(picked) < self.shots and any(queues.values()):
-            for c in classes:
-                if queues[c] and len(picked) < self.shots:
-                    picked.append(int(queues[c].pop()))
-        self.examples = [{**self._parts(X, outputs, i), "answer": self._label(labels[i])} for i in picked]
+        picked = np.random.default_rng(self.seed).permutation(len(labels))[: self.shots]
+        self.examples = [{**self._parts(X, outputs, int(i)), "answer": self._label(labels[i])} for i in picked]
 
     def transform(self, X: pd.DataFrame, outputs: Outputs) -> pd.DataFrame:
         states = [self._state(X, outputs, i) for i in range(len(X))]
@@ -136,7 +131,8 @@ class JevAnswer:
         parts = self._parts(X, outputs, i)
         if len(parts) == 1 and not self.examples:
             return parts["record"]
-        return {**parts, "labeled_examples": self.examples} if self.examples else parts
+        # Examples first: every row shares that prefix, so servers with prefix caching compute it once.
+        return {"labeled_examples": self.examples, **parts} if self.examples else parts
 
     def _prompt_question(self, has_evidence: bool) -> Question:
         notes = []

@@ -2,8 +2,9 @@
 
 from importlib.metadata import version
 
-from .adapters import JevHTTP
+from .adapters import JevHTTP, OpenAICompatibleJev
 from .backends import CachedJev, JevBackend, TabBackend, judge_many
+from .models import jev_to_tabpfn, kev_to_tabicl
 from .pipeline import Pipeline, jev_then_tab, parallel_blend, tab_then_jev
 from .steps import Blend, JevAnswer, JevFeatures, Step, TabPredict
 from .types import Answer, Question, TabLimits
@@ -18,6 +19,7 @@ __all__ = [
     "JevBackend",
     "JevFeatures",
     "JevHTTP",
+    "OpenAICompatibleJev",
     "Pipeline",
     "Question",
     "Step",
@@ -25,7 +27,9 @@ __all__ = [
     "TabLimits",
     "TabPredict",
     "jev_then_tab",
+    "jev_to_tabpfn",
     "judge_many",
+    "kev_to_tabicl",
     "parallel_blend",
     "tab_then_jev",
 ]

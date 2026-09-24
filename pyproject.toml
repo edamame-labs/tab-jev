@@ -16,12 +16,24 @@ classifiers = [
     "Programming Language :: Python :: 3",
 ]
 
+[project.optional-dependencies]
+tabicl = ["tabicl>=2.2.0"]
+tabpfn = ["tabpfn-client>=0.6.0"]
+
 [build-system]
 requires = ["uv_build>=0.12.1,<0.13.0"]
 build-backend = "uv_build"
 
 [dependency-groups]
+demo = [
+    "tabicl>=2.2.0",
+    "tabpfn-client>=0.6.0",
+    "tabulate>=0.10.0",
+]
 dev = [
     "pytest>=9.1.1",
     "scikit-learn>=1.7.2",
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

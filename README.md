@@ -25,6 +25,22 @@ answers = pipeline.predict(X_new)  # Jev-format answers: choice, probabilities, 
 
 `JevHTTP` reads `TYPESAFE_API_KEY`. Pass `base_url=` to use a self-hosted server that speaks the same format.
 
+## Ready-made models
+
+Both wire jev -> tab:
+
+| Model | jev | tab | Install |
+|---|---|---|---|
+| `kev_to_tabicl(target, rubrics)` | [Kev](https://github.com/jaredpalmer/kev), an open Jev reproduction served locally | TabICL, local | `pip install "tab-jev[tabicl]"` |
+| `jev_to_tabpfn(target, rubrics)` | TypeSafe's Jev API (`TYPESAFE_API_KEY`) | TabPFN 3.5 API (`TABPFN_TOKEN`) | `pip install "tab-jev[tabpfn]"` |
+
+```python
+from tab_jev import jev_to_tabpfn
+
+model = jev_to_tabpfn(target, rubrics).fit(X, y)
+answers = model.predict(X_new)
+```
+
 ## Ways to combine jev and tab
 
 | Preset | Flow |

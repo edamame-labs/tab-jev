@@ -39,12 +39,21 @@ def test_jev_then_tab_gives_tab_the_jev_columns():
     assert np.allclose(probabilities.sum(axis=1), 1)
 
 
+def test_jev_columns_keep_the_tabular_columns_away_from_jev():
+    X, y = make_data(30)
+    jev = FakeJev()
+    tab = LogisticRegression()
+    jev_then_tab(BUY, jev, tab, jev_columns=["review"]).fit(X, y)
+    assert all(set(state) == {"review"} for state in jev.states)
+    assert "price" in tab.feature_names_in_  # tab still gets the tabular columns
+
+
 def test_tab_then_jev_examples_carry_out_of_fold_tab_predictions():
     X, y = make_data(30)
     jev = FakeJev()
     pipeline = tab_then_jev(BUY, jev, MemorizingTab(), shots=4).fit(X, y)
     examples = pipeline.steps[-1].examples
-    assert len(examples) == 4 and {e["answer"] for e in examples} == {"yes", "no"}
+    assert len(examples) == 4 and {e["answer"] for e in examples} <= {"yes", "no"}
     # A tab that had seen an example's own label would be certain about it.
     assert all(e["model_predictions"]["tab"] == {"yes": 0.5, "no": 0.5} for e in examples)
 
@@ -105,4 +114,12 @@ def test_cached_jev_calls_the_backend_once_per_state():
     cached = CachedJev(jev)
     for state in ({"a": 1}, {"a": 1}, {"a": 2}):
         cached.judge(state, {"buy": BUY})
-    assert len(jev.states) == 2
+    assert len(jev.states) == 2 and cached.calls == 2
+
+
+def test_cached_jev_keeps_answers_on_disk(tmp_path):
+    jev = FakeJev()
+    first = CachedJev(jev, path=tmp_path / "cache.jsonl").judge({"review": "good"}, {"buy": BUY})
+    again = CachedJev(jev, path=tmp_path / "cache.jsonl")
+    assert again.judge({"review": "good"}, {"buy": BUY}) == first
+    assert len(jev.states) == 1 and again.calls == 0

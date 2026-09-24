@@ -89,26 +89,54 @@ class Pipeline:
         return pd.concat(parts).loc[X.index]
 
 
-def jev_then_tab(target: Question, jev: JevBackend, tab: TabBackend, rubrics: Rubrics | None = None, shots: int = 0) -> Pipeline:
+# In the presets, `jev_columns` limits which columns jev reads when it answers the target, e.g. only
+# the text columns, leaving the tabular columns to tab. The default is the whole row.
+
+
+def jev_then_tab(
+    target: Question,
+    jev: JevBackend,
+    tab: TabBackend,
+    rubrics: Rubrics | None = None,
+    shots: int = 0,
+    jev_columns: Sequence[str] | None = None,
+) -> Pipeline:
     """jev turns text into features and answers the target; tab predicts from all of it."""
     jev = _cached(jev)
     features = [JevFeatures(jev, rubrics)] if rubrics else []
-    return Pipeline(target, [*features, JevAnswer(jev, target, shots=shots), TabPredict(tab)])
+    answer = JevAnswer(jev, target, columns=jev_columns, shots=shots)
+    return Pipeline(target, [*features, answer, TabPredict(tab)])
 
 
-def tab_then_jev(target: Question, jev: JevBackend, tab: TabBackend, rubrics: Rubrics | None = None, shots: int = 8) -> Pipeline:
+def tab_then_jev(
+    target: Question,
+    jev: JevBackend,
+    tab: TabBackend,
+    rubrics: Rubrics | None = None,
+    shots: int = 8,
+    jev_columns: Sequence[str] | None = None,
+) -> Pipeline:
     """tab predicts first; jev makes the final call with tab's probabilities and labeled examples in the state."""
     jev = _cached(jev)
     features = [JevFeatures(jev, rubrics)] if rubrics else []
-    return Pipeline(target, [*features, TabPredict(tab), JevAnswer(jev, target, evidence=["tab"], shots=shots)])
+    answer = JevAnswer(jev, target, columns=jev_columns, evidence=["tab"], shots=shots)
+    return Pipeline(target, [*features, TabPredict(tab), answer])
 
 
-def parallel_blend(target: Question, jev: JevBackend, tab: TabBackend, rubrics: Rubrics | None = None, shots: int = 0) -> Pipeline:
+def parallel_blend(
+    target: Question,
+    jev: JevBackend,
+    tab: TabBackend,
+    rubrics: Rubrics | None = None,
+    shots: int = 0,
+    jev_columns: Sequence[str] | None = None,
+) -> Pipeline:
     """jev and tab predict separately; a cross-validated weighted average combines them."""
     jev = _cached(jev)
     features = [JevFeatures(jev, rubrics)] if rubrics else []
+    answer = JevAnswer(jev, target, columns=jev_columns, shots=shots)
     tab_step = TabPredict(tab, inputs=["features"] if rubrics else [])
-    return Pipeline(target, [*features, JevAnswer(jev, target, shots=shots), tab_step, Blend(["jev", "tab"])])
+    return Pipeline(target, [*features, answer, tab_step, Blend(["jev", "tab"])])
 
 
 def _cached(jev: JevBackend) -> JevBackend:

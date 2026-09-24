@@ -9,7 +9,9 @@ from sklearn.linear_model import LogisticRegression
 from tab_jev import Answer, Question, TabLimits
 
 BUY = Question("choice", "Will the customer buy?", {"yes": "buys", "no": "does not buy"})
-SENTIMENT = {"review": {"sentiment": Question("choice", "Sentiment of the review?", {"positive": "happy", "negative": "unhappy"})}}
+SENTIMENT = {
+    "review": {"sentiment": Question("choice", "Sentiment of the review?", {"positive": "happy", "negative": "unhappy"})}
+}
 
 
 class FakeJev:

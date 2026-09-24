@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import json
+import threading
 from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
 from typing import Any, Literal, Mapping, Protocol, Sequence, runtime_checkable
 
 from .types import Answer, Question
@@ -44,17 +46,40 @@ def judge_many(
 
 
 class CachedJev:
-    """Wraps a jev backend and remembers its answers, keyed by state and questions."""
+    """Wraps a jev backend and remembers its answers, keyed by backend, state and questions.
 
-    def __init__(self, backend: JevBackend):
+    With `path`, answers are also appended to a JSON-lines file and loaded again next time, so
+    re-running an evaluation does not pay for the same calls twice. `calls` counts real backend calls.
+    """
+
+    def __init__(self, backend: JevBackend, path: str | Path | None = None):
         self.backend = backend
         self.probability_source = backend.probability_source
+        self.path = Path(path) if path is not None else None
+        self.calls = 0
         self._answers: dict[str, Mapping[str, Answer]] = {}
+        self._lock = threading.Lock()
+        if self.path is not None and self.path.exists():
+            for line in self.path.read_text().splitlines():
+                record = json.loads(line)
+                self._answers[record["key"]] = {name: Answer(**data) for name, data in record["answers"].items()}
 
     def judge(self, state: Any, questions: Mapping[str, Question]) -> Mapping[str, Answer]:
+        backend_id = [type(self.backend).__name__, getattr(self.backend, "model", None)]
         key = json.dumps(
-            [state, {name: question.to_dict() for name, question in questions.items()}], sort_keys=True, default=str
+            [backend_id, state, {name: question.to_dict() for name, question in questions.items()}],
+            sort_keys=True,
+            default=str,
         )
-        if key not in self._answers:
-            self._answers[key] = self.backend.judge(state, questions)
-        return self._answers[key]
+        if key in self._answers:
+            return self._answers[key]
+        answers = self.backend.judge(state, questions)
+        with self._lock:
+            self.calls += 1
+            self._answers[key] = answers
+            if self.path is not None:
+                self.path.parent.mkdir(parents=True, exist_ok=True)
+                with self.path.open("a") as file:
+                    record = {"key": key, "answers": {name: answer.to_dict() for name, answer in answers.items()}}
+                    file.write(json.dumps(record) + "\n")
+        return answers
