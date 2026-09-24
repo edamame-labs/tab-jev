@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 430" width="760" height="430" role="img" aria-labelledby="t d">
+  <title id="t">Kickstarter: AUC by number of labeled rows</title>
+  <desc id="d">Grouped bars. With 64, 256 and 1,024 labeled rows: tab-jev 0.684, 0.745, 0.765; tabular foundation model on the table only 0.641, 0.688, 0.696; Jev text recalibrated 0.682 at every size; TF-IDF plus table logistic regression 0.623, 0.649, 0.662.</desc>
+  <style>text { font-family: -apple-system, "SF Pro Text", "Inter", "Helvetica Neue", Arial, sans-serif; fill: #0b0b0b; } .muted { fill: #52514e; } .faint { fill: #8a8984; } .grid { stroke: #e7e6e2; stroke-width: 1; }</style>
+  <rect width="760" height="430" rx="14" fill="#fcfcfb"/>
+  <text x="28" y="38" font-size="18" font-weight="650">Kickstarter: will the project get funded?</text>
+  <text x="28" y="60" font-size="12.5" class="muted">AUC on 2,002 held-out projects, by number of labeled rows. Jev API + TabPFN 3.5. Higher is better.</text>
+  <rect x="28" y="78" width="12" height="12" rx="3" fill="#2a78d6"/>
+  <text x="46" y="88.5" font-size="12.5" font-weight="650">tab-jev (jev → tab)</text>
+  <rect x="202.9" y="78" width="12" height="12" rx="3" fill="#8f8e89"/>
+  <text x="220.9" y="88.5" font-size="12.5">TFM, table only</text>
+  <rect x="349.4" y="78" width="12" height="12" rx="3" fill="#b3b2ac"/>
+  <text x="367.4" y="88.5" font-size="12.5">jev text + calibration</text>
+  <rect x="545.5999999999999" y="78" width="12" height="12" rx="3" fill="#d3d2cc"/>
+  <text x="563.5999999999999" y="88.5" font-size="12.5">TF-IDF + table, LR</text>
+  <line class="grid" x1="64" y1="340.0" x2="732" y2="340.0"/><text x="56" y="344.0" font-size="11.5" class="muted" text-anchor="end">0.50</text>
+  <line class="grid" x1="64" y1="263.3" x2="732" y2="263.3"/><text x="56" y="267.3" font-size="11.5" class="muted" text-anchor="end">0.60</text>
+  <line class="grid" x1="64" y1="186.7" x2="732" y2="186.7"/><text x="56" y="190.7" font-size="11.5" class="muted" text-anchor="end">0.70</text>
+  <line class="grid" x1="64" y1="110.0" x2="732" y2="110.0"/><text x="56" y="114.0" font-size="11.5" class="muted" text-anchor="end">0.80</text>
+  <line x1="64" y1="340" x2="732" y2="340" stroke="#c9c8c2"/>
+  <path d="M102.0 340 V202.9 Q102.0 198.9 106.0 198.9 H136.0 Q140.0 198.9 140.0 202.9 V340 Z" fill="#2a78d6"/>
+  <text x="121.0" y="191.9" text-anchor="middle" font-weight="700" font-size="13">.684</text>
+  <path d="M148.0 340 V235.9 Q148.0 231.9 152.0 231.9 H182.0 Q186.0 231.9 186.0 235.9 V340 Z" fill="#8f8e89"/>
+  <text x="167.0" y="224.9" text-anchor="middle" font-size="11.5" class="muted">.641</text>
+  <path d="M194.0 340 V204.5 Q194.0 200.5 198.0 200.5 H228.0 Q232.0 200.5 232.0 204.5 V340 Z" fill="#b3b2ac"/>
+  <text x="213.0" y="193.5" text-anchor="middle" font-size="11.5" class="muted">.682</text>
+  <path d="M240.0 340 V249.7 Q240.0 245.7 244.0 245.7 H274.0 Q278.0 245.7 278.0 249.7 V340 Z" fill="#d3d2cc"/>
+  <text x="259.0" y="238.7" text-anchor="middle" font-size="11.5" class="muted">.623</text>
+  <text x="190.0" y="362" text-anchor="middle" font-size="13" font-weight="600">64 labels</text>
+  <path d="M322.0 340 V156.2 Q322.0 152.2 326.0 152.2 H356.0 Q360.0 152.2 360.0 156.2 V340 Z" fill="#2a78d6"/>
+  <text x="341.0" y="145.2" text-anchor="middle" font-weight="700" font-size="13">.745</text>
+  <path d="M368.0 340 V199.9 Q368.0 195.9 372.0 195.9 H402.0 Q406.0 195.9 406.0 199.9 V340 Z" fill="#8f8e89"/>
+  <text x="387.0" y="188.9" text-anchor="middle" font-size="11.5" class="muted">.688</text>
+  <path d="M414.0 340 V204.5 Q414.0 200.5 418.0 200.5 H448.0 Q452.0 200.5 452.0 204.5 V340 Z" fill="#b3b2ac"/>
+  <text x="433.0" y="193.5" text-anchor="middle" font-size="11.5" class="muted">.682</text>
+  <path d="M460.0 340 V229.8 Q460.0 225.8 464.0 225.8 H494.0 Q498.0 225.8 498.0 229.8 V340 Z" fill="#d3d2cc"/>
+  <text x="479.0" y="218.8" text-anchor="middle" font-size="11.5" class="muted">.649</text>
+  <text x="410.0" y="362" text-anchor="middle" font-size="13" font-weight="600">256 labels</text>
+  <path d="M542.0 340 V140.8 Q542.0 136.8 546.0 136.8 H576.0 Q580.0 136.8 580.0 140.8 V340 Z" fill="#2a78d6"/>
+  <text x="561.0" y="129.8" text-anchor="middle" font-weight="700" font-size="13">.765*</text>
+  <path d="M588.0 340 V193.7 Q588.0 189.7 592.0 189.7 H622.0 Q626.0 189.7 626.0 193.7 V340 Z" fill="#8f8e89"/>
+  <text x="607.0" y="182.7" text-anchor="middle" font-size="11.5" class="muted">.696</text>
+  <path d="M634.0 340 V204.5 Q634.0 200.5 638.0 200.5 H668.0 Q672.0 200.5 672.0 204.5 V340 Z" fill="#b3b2ac"/>
+  <text x="653.0" y="193.5" text-anchor="middle" font-size="11.5" class="muted">.682</text>
+  <path d="M680.0 340 V219.8 Q680.0 215.8 684.0 215.8 H714.0 Q718.0 215.8 718.0 219.8 V340 Z" fill="#d3d2cc"/>
+  <text x="699.0" y="208.8" text-anchor="middle" font-size="11.5" class="muted">.662</text>
+  <text x="630.0" y="362" text-anchor="middle" font-size="13" font-weight="600">1,024 labels</text>
+  <text x="28" y="396" font-size="11" class="faint">Mean over label draws (* one draw so far). Axis starts at 0.50 = chance. Test rows split by near-duplicate groups.</text>
+  <text x="28" y="412" font-size="11" class="faint">Source: demo/results/kickstarter_cloud_tabpfn.md</text>
+</svg>
