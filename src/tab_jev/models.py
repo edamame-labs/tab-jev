@@ -1,6 +1,7 @@
 """Ready-made models: a jev backend and a tab backend wired as jev -> tab.
 
-Each needs an optional extra: `pip install "tab-jev[tabicl]"` or `pip install "tab-jev[tabpfn]"`.
+jev_to_tabpfn is the recommended one (`pip install "tab-jev[tabpfn]"`); kev_to_tabicl comes along for
+local use (`pip install "tab-jev[local]"`).
 `jev_columns` limits what jev reads when it answers the target, e.g. only the text columns,
 leaving the tabular columns to tab; by default it reads the whole row.
 """
