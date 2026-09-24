@@ -32,7 +32,7 @@ Churn, fraud and claims screening, lead scoring and ticket escalation are typica
 
 ## Results on Kickstarter
 
-![AUC by number of labeled rows: tab-jev leads from 256 labels on](docs/kickstarter-auc.svg)
+![Bar chart: tab-jev has the highest AUC at 64, 256 and 1,024 labeled rows](docs/kickstarter-auc.svg)
 
 | labeled rows | tab-jev (jev → tab) | TFM, table only | jev text + calibration | TF-IDF + table, LR |
 |---:|---:|---:|---:|---:|
