@@ -17,8 +17,11 @@ classifiers = [
 ]
 
 [project.optional-dependencies]
-tabicl = ["tabicl>=2.2.0"]
+# Recommended: Jev API + TabPFN API.
 tabpfn = ["tabpfn-client>=0.6.0"]
+# Included for local use: TabICL (Kev runs as its own server).
+local = ["tabicl>=2.2.0"]
+tabicl = ["tabicl>=2.2.0"]
 
 [build-system]
 requires = ["uv_build>=0.12.1,<0.13.0"]

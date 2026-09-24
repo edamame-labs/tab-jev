@@ -1925,6 +1925,9 @@ dependencies = [
 ]
 
 [package.optional-dependencies]
+local = [
+    { name = "tabicl" },
+]
 tabicl = [
     { name = "tabicl" },
 ]
@@ -1947,10 +1950,11 @@ dev = [
 requires-dist = [
     { name = "numpy", specifier = ">=1.24" },
     { name = "pandas", specifier = ">=2.0" },
+    { name = "tabicl", marker = "extra == 'local'", specifier = ">=2.2.0" },
     { name = "tabicl", marker = "extra == 'tabicl'", specifier = ">=2.2.0" },
     { name = "tabpfn-client", marker = "extra == 'tabpfn'", specifier = ">=0.6.0" },
 ]
-provides-extras = ["tabicl", "tabpfn"]
+provides-extras = ["tabpfn", "local", "tabicl"]
 
 [package.metadata.requires-dev]
 demo = [
