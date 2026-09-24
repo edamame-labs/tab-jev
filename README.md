@@ -30,6 +30,18 @@ Churn, fraud and claims screening, lead scoring and ticket escalation are typica
 | the text adds little | a tabular model alone |
 | you have 10k+ labels | a supervised model (TF-IDF, embeddings, fine-tuning) |
 
+## Results on Kickstarter
+
+![AUC by number of labeled rows: tab-jev leads from 256 labels on](docs/kickstarter-auc.svg)
+
+| labeled rows | tab-jev (jev → tab) | TFM, table only | jev text + calibration | TF-IDF + table, LR |
+|---:|---:|---:|---:|---:|
+| 64 | **0.684** | 0.641 | 0.682 | 0.623 |
+| 256 | **0.745** | 0.688 | 0.682 | 0.649 |
+| 1,024 | **0.765** (one draw) | 0.696 | 0.682 | 0.662 |
+
+AUC on 2,002 test projects, mean over label draws. Jev API + TabPFN 3.5. Details in [demo/](demo/).
+
 ## Example: will a Kickstarter project get funded?
 
 Kaggle's [Funding Successful Projects on Kickstarter](https://www.kaggle.com/datasets/codename007/funding-successful-projects) has a short pitch (text) and campaign facts (table) for each project, and whether it reached its goal. A few rows:
