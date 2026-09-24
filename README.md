@@ -1,5 +1,9 @@
 # tab-jev
 
+**A jev-like model + a tabular foundation model = an in-context learner for your text & tabular data.**
+
+![jev reads the text, the numbers pass through, and a tabular foundation model learns from your labeled rows in context](docs/tab-jev.gif)
+
 Predictions on data that mixes text and tables, with pluggable backends:
 
 - **jev** backends turn text into typed judgments (a chosen option plus probabilities), in the request/response shape of TypeSafe's Jev API.

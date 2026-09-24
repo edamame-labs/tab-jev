@@ -1,0 +1,220 @@
+<meta charset="utf-8">
+<title>tab-jev</title>
+<style>
+:root {
+  --loop: 5000ms;
+  --ink: #0d0d10; --muted: #6e6e78; --faint: #a1a1aa; --line: #e3e3e8; --card: #ffffff; --ground: #f7f7f8;
+  --blue: #0866ff; --violet: #7b61ff; --green: #10a37f; --red: #e5484d; --tint: rgba(8, 102, 255, 0.08);
+  --sans: -apple-system, "SF Pro Text", "SF Pro Display", "Inter", "Helvetica Neue", Arial, sans-serif;
+  --mono: "SF Mono", ui-monospace, Menlo, monospace;
+}
+body { margin: 0; background: var(--ground); }
+.canvas { width: 940px; margin: 0 auto; background: var(--ground); }
+svg { display: block; }
+svg text { font-family: var(--sans); fill: var(--ink); }
+.muted { fill: var(--muted); }
+.eyebrow { font-size: 10.5px; letter-spacing: 0.12em; font-weight: 600; fill: var(--faint); }
+.mono { font-family: var(--mono); }
+.th { font-size: 10.5px; font-weight: 600; fill: var(--muted); }
+.card { fill: var(--card); stroke: var(--line); stroke-width: 1; }
+.wire { fill: none; stroke: #cfcfd6; stroke-width: 1.5; }
+
+/* one loop for everything, so the GIF has no seam */
+.anim { animation-duration: var(--loop); animation-iteration-count: infinite; animation-timing-function: ease-in-out; }
+.dot { offset-rotate: 0deg; opacity: 0; animation-timing-function: cubic-bezier(.45,0,.55,1); }
+.grow { transform-box: fill-box; transform-origin: left center; }
+.pop { transform-box: fill-box; transform-origin: center; }
+
+/* 1. jev reads the text column; the numbers pass through */
+@keyframes hl-text  { 0%,2%{opacity:0} 6%,26%{opacity:1} 32%,100%{opacity:0} }
+@keyframes d-top    { 0%,6%{offset-distance:0%;opacity:0} 8%{opacity:1} 24%{offset-distance:100%;opacity:1} 26%,100%{offset-distance:100%;opacity:0} }
+@keyframes d-bottom { 0%,10%{offset-distance:0%;opacity:0} 12%{opacity:1} 26%{offset-distance:100%;opacity:1} 28%,100%{offset-distance:100%;opacity:0} }
+@keyframes jev      { 0%,8%{transform:scale(1)} 14%{transform:scale(1.08)} 20%,100%{transform:scale(1)} }
+/* 2. new columns fill in, row by row */
+@keyframes fill1 { 0%,24%{transform:scaleX(0)} 30%,94%{transform:scaleX(1)} 99%,100%{transform:scaleX(0)} }
+@keyframes fill2 { 0%,26%{transform:scaleX(0)} 32%,94%{transform:scaleX(1)} 99%,100%{transform:scaleX(0)} }
+@keyframes fill3 { 0%,28%{transform:scaleX(0)} 34%,94%{transform:scaleX(1)} 99%,100%{transform:scaleX(0)} }
+@keyframes fill4 { 0%,30%{transform:scaleX(0)} 36%,94%{transform:scaleX(1)} 99%,100%{transform:scaleX(0)} }
+@keyframes nums  { 0%,24%{opacity:.25} 30%,94%{opacity:1} 99%,100%{opacity:.25} }
+/* 3. labeled rows go in as examples, the ? row as the question */
+@keyframes hl-ex    { 0%,40%{opacity:0} 44%,60%{opacity:1} 66%,100%{opacity:0} }
+@keyframes hl-q     { 0%,54%{opacity:0} 58%,72%{opacity:1} 78%,100%{opacity:0} }
+@keyframes d-ex     { 0%,42%{offset-distance:0%;opacity:0} 44%{opacity:1} 56%{offset-distance:100%;opacity:1} 58%,100%{offset-distance:100%;opacity:0} }
+@keyframes d-q      { 0%,56%{offset-distance:0%;opacity:0} 58%{opacity:1} 68%{offset-distance:100%;opacity:1} 70%,100%{offset-distance:100%;opacity:0} }
+@keyframes ex-in    { 0%,50%{opacity:.15} 56%,94%{opacity:1} 99%,100%{opacity:.15} }
+@keyframes q-in     { 0%,64%{opacity:.15} 68%,94%{opacity:1} 99%,100%{opacity:.15} }
+@keyframes out      { 0%,70%{transform:scaleX(0)} 80%,94%{transform:scaleX(1)} 99%,100%{transform:scaleX(0)} }
+/* 4. the answer goes back into the ? cell */
+@keyframes d-back   { 0%,80%{offset-distance:0%;opacity:0} 82%{opacity:1} 90%{offset-distance:100%;opacity:1} 92%,100%{offset-distance:100%;opacity:0} }
+@keyframes qmark    { 0%,88%{opacity:1} 91%,95%{opacity:0} 99%,100%{opacity:1} }
+@keyframes answer   { 0%,88%{opacity:0} 91%,95%{opacity:1} 99%,100%{opacity:0} }
+
+@media (prefers-reduced-motion: reduce) { .anim { animation: none !important; } .dot { opacity: 0; } }
+</style>
+<div class="canvas">
+<svg viewBox="0 0 940 504" width="940" height="504">
+  <defs>
+    <linearGradient id="brand" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#0866ff"/><stop offset="1" stop-color="#7b61ff"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="2" stdDeviation="6" flood-color="#0d0d10" flood-opacity="0.06"/>
+    </filter>
+    <filter id="glow" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 1 L9 5 L0 9 z" fill="#cfcfd6"/>
+    </marker>
+  </defs>
+  <rect width="940" height="504" fill="var(--ground)"/>
+
+  <!-- title -->
+  <text x="30" y="46" font-size="28" font-weight="650" letter-spacing="-0.02em">tab-jev</text>
+  <text x="30" y="76" font-size="17" font-weight="550" letter-spacing="-0.01em"><tspan style="fill:var(--blue)">jev-like model</tspan><tspan style="fill:var(--muted)"> + </tspan><tspan>tabular foundation model</tspan><tspan style="fill:var(--muted)"> = </tspan><tspan>an in-context learner for your text &amp; tabular data</tspan></text>
+
+  <!-- tab-jev: everything it does sits in this frame -->
+  <rect x="336" y="94" width="588" height="382" rx="18" fill="rgba(8,102,255,0.025)" stroke="url(#brand)" stroke-width="1.5" stroke-dasharray="6 5"/>
+  <g transform="translate(818 80)">
+    <rect width="96" height="28" rx="14" fill="url(#brand)"/>
+    <text x="48" y="19" font-size="13" font-weight="650" text-anchor="middle" style="fill:#fff">tab-jev</text>
+  </g>
+
+  <!-- two paths from table 1 to table 2 (under the cards) -->
+  <path class="wire" d="M110 176 C110 132 180 120 250 120 L420 120 C450 120 460 140 460 172" marker-end="url(#arr)"/>
+  <path class="wire" d="M250 362 C250 396 300 404 360 404 L540 404 C570 404 578 390 578 366" marker-end="url(#arr)"/>
+  <text x="458" y="424" font-size="11.5" class="muted" text-anchor="middle">numbers stay as they are</text>
+
+  <!-- stage labels -->
+  <g class="eyebrow">
+    <text x="30" y="166">01  YOUR TABLE</text>
+    <text x="350" y="166">02  ALL NUMBERS</text>
+    <text x="690" y="166">03  TABULAR FOUNDATION MODEL</text>
+  </g>
+
+  <!-- jev on the text path -->
+  <g class="anim pop" style="animation-name:jev">
+    <rect x="350" y="106" width="118" height="28" rx="14" fill="#fff" stroke="var(--blue)"/>
+    <circle cx="368" cy="120" r="6" fill="url(#brand)"/>
+    <text x="380" y="124" font-size="12" font-weight="600">jev reads text</text>
+  </g>
+
+  <!-- ===== 01 raw table ===== -->
+  <g filter="url(#shadow)"><rect class="card" x="30" y="176" width="292" height="186" rx="12"/></g>
+  <rect class="anim" style="animation-name:hl-text" x="36" y="180" width="146" height="178" rx="8" fill="var(--tint)"/>
+  <g class="th">
+    <text x="44" y="200" style="fill:var(--blue)">pitch (text)</text>
+    <text x="224" y="200" text-anchor="end">goal</text>
+    <text x="262" y="200" text-anchor="end">days</text>
+    <text x="298" y="200" text-anchor="middle">funded</text>
+  </g>
+  <line x1="36" y1="210" x2="316" y2="210" stroke="var(--line)"/>
+  <g font-size="11.5">
+    <text x="44" y="236">A 2,000-mile bicycle…</text>
+    <text x="224" y="236" text-anchor="end" class="mono">4000</text><text x="262" y="236" text-anchor="end" class="mono">33.5</text>
+    <text x="44" y="272">Urbio, the magically…</text>
+    <text x="224" y="272" text-anchor="end" class="mono">15000</text><text x="262" y="272" text-anchor="end" class="mono">40</text>
+    <text x="44" y="308">The new album project…</text>
+    <text x="224" y="308" text-anchor="end" class="mono">10000</text><text x="262" y="308" text-anchor="end" class="mono">75</text>
+    <text x="44" y="344">Cincinnati artist…</text>
+    <text x="224" y="344" text-anchor="end" class="mono">500</text><text x="262" y="344" text-anchor="end" class="mono">30</text>
+  </g>
+  <g font-size="14" font-weight="700" text-anchor="middle">
+    <text x="298" y="237" style="fill:var(--green)">✓</text>
+    <text x="298" y="273" style="fill:var(--green)">✓</text>
+    <text x="298" y="309" style="fill:var(--red)">✗</text>
+    <text x="298" y="345" style="fill:var(--blue)">?</text>
+  </g>
+  <g stroke="var(--line)"><line x1="36" y1="250" x2="316" y2="250"/><line x1="36" y1="286" x2="316" y2="286"/><line x1="36" y1="322" x2="316" y2="322"/></g>
+
+  <!-- ===== 02 numbers only ===== -->
+  <g filter="url(#shadow)"><rect class="card" x="350" y="176" width="300" height="186" rx="12"/></g>
+  <g class="th">
+    <text x="360" y="200" style="fill:var(--blue)">clarity</text>
+    <text x="404" y="200" style="fill:var(--blue)">appeal</text>
+    <text x="448" y="200" style="fill:var(--blue)">P(yes)</text>
+    <text x="560" y="200" text-anchor="end">goal</text>
+    <text x="598" y="200" text-anchor="end">days</text>
+    <text x="626" y="200" text-anchor="middle">funded</text>
+  </g>
+  <line x1="356" y1="210" x2="644" y2="210" stroke="var(--line)"/>
+  <g fill="#eeeef2">
+    <rect x="360" y="228" width="34" height="8" rx="4"/><rect x="404" y="228" width="34" height="8" rx="4"/><rect x="448" y="228" width="34" height="8" rx="4"/>
+    <rect x="360" y="264" width="34" height="8" rx="4"/><rect x="404" y="264" width="34" height="8" rx="4"/><rect x="448" y="264" width="34" height="8" rx="4"/>
+    <rect x="360" y="300" width="34" height="8" rx="4"/><rect x="404" y="300" width="34" height="8" rx="4"/><rect x="448" y="300" width="34" height="8" rx="4"/>
+    <rect x="360" y="336" width="34" height="8" rx="4"/><rect x="404" y="336" width="34" height="8" rx="4"/><rect x="448" y="336" width="34" height="8" rx="4"/>
+  </g>
+  <!-- real jev answers: clarity/3, appeal/3, P(funded) -->
+  <g fill="url(#brand)">
+    <rect class="anim grow" style="animation-name:fill1" x="360" y="228" width="24" height="8" rx="4"/>
+    <rect class="anim grow" style="animation-name:fill1" x="404" y="228" width="25" height="8" rx="4"/>
+    <rect class="anim grow" style="animation-name:fill1" x="448" y="228" width="12" height="8" rx="4"/>
+    <rect class="anim grow" style="animation-name:fill2" x="360" y="264" width="4" height="8" rx="4"/>
+    <rect class="anim grow" style="animation-name:fill2" x="404" y="264" width="17" height="8" rx="4"/>
+    <rect class="anim grow" style="animation-name:fill2" x="448" y="264" width="13" height="8" rx="4"/>
+    <rect class="anim grow" style="animation-name:fill3" x="360" y="300" width="11" height="8" rx="4"/>
+    <rect class="anim grow" style="animation-name:fill3" x="404" y="300" width="4" height="8" rx="4"/>
+    <rect class="anim grow" style="animation-name:fill3" x="448" y="300" width="5" height="8" rx="4"/>
+    <rect class="anim grow" style="animation-name:fill4" x="360" y="336" width="26" height="8" rx="4"/>
+    <rect class="anim grow" style="animation-name:fill4" x="404" y="336" width="16" height="8" rx="4"/>
+    <rect class="anim grow" style="animation-name:fill4" x="448" y="336" width="14" height="8" rx="4"/>
+  </g>
+  <g font-size="11.5" class="anim" style="animation-name:nums">
+    <text x="560" y="236" text-anchor="end" class="mono">4000</text><text x="598" y="236" text-anchor="end" class="mono">33.5</text>
+    <text x="560" y="272" text-anchor="end" class="mono">15000</text><text x="598" y="272" text-anchor="end" class="mono">40</text>
+    <text x="560" y="308" text-anchor="end" class="mono">10000</text><text x="598" y="308" text-anchor="end" class="mono">75</text>
+    <text x="560" y="344" text-anchor="end" class="mono">500</text><text x="598" y="344" text-anchor="end" class="mono">30</text>
+  </g>
+  <rect class="anim" style="animation-name:hl-ex" x="356" y="214" width="288" height="106" rx="6" fill="rgba(16,163,127,.08)"/>
+  <rect class="anim" style="animation-name:hl-q" x="356" y="324" width="288" height="34" rx="6" fill="var(--tint)"/>
+  <g font-size="14" font-weight="700" text-anchor="middle">
+    <text x="626" y="237" style="fill:var(--green)">✓</text>
+    <text x="626" y="273" style="fill:var(--green)">✓</text>
+    <text x="626" y="309" style="fill:var(--red)">✗</text>
+    <text class="anim" x="626" y="345" style="fill:var(--blue);animation-name:qmark">?</text>
+  </g>
+  <g class="anim" style="animation-name:answer">
+    <rect x="612" y="336" width="28" height="8" rx="4" fill="#eeeef2"/>
+    <rect x="612" y="336" width="12" height="8" rx="4" fill="url(#brand)"/>
+  </g>
+  <g stroke="var(--line)"><line x1="356" y1="250" x2="644" y2="250"/><line x1="356" y1="286" x2="644" y2="286"/><line x1="356" y1="322" x2="644" y2="322"/></g>
+
+  <!-- ===== 03 tabular foundation model ===== -->
+  <path class="wire" d="M650 268 C668 268 672 252 690 252" marker-end="url(#arr)"/>
+  <path class="wire" d="M650 340 C668 340 672 316 690 316" marker-end="url(#arr)"/>
+  <g filter="url(#shadow)"><rect class="card" x="690" y="176" width="220" height="186" rx="12"/></g>
+  <text x="704" y="200" font-size="11.5" class="muted">in-context learning, no training</text>
+  <text x="704" y="226" class="eyebrow" style="fill:var(--green)">EXAMPLES</text>
+  <g class="anim" style="animation-name:ex-in">
+    <g transform="translate(704 236)"><rect width="156" height="9" rx="3" fill="#eeeef2"/><text x="182" y="9" font-size="12" font-weight="700" text-anchor="middle" style="fill:var(--green)">✓</text></g>
+    <g transform="translate(704 252)"><rect width="156" height="9" rx="3" fill="#eeeef2"/><text x="182" y="9" font-size="12" font-weight="700" text-anchor="middle" style="fill:var(--green)">✓</text></g>
+    <g transform="translate(704 268)"><rect width="156" height="9" rx="3" fill="#eeeef2"/><text x="182" y="9" font-size="12" font-weight="700" text-anchor="middle" style="fill:var(--red)">✗</text></g>
+  </g>
+  <text x="704" y="302" class="eyebrow" style="fill:var(--blue)">QUESTION</text>
+  <g class="anim" style="animation-name:q-in">
+    <rect x="704" y="311" width="156" height="9" rx="3" fill="none" stroke="var(--blue)" stroke-width="1.2"/>
+    <text x="886" y="320" font-size="12" font-weight="700" text-anchor="middle" style="fill:var(--blue)">?</text>
+  </g>
+  <text x="704" y="347" font-size="11.5" class="muted">P(funded)</text>
+  <rect x="762" y="340" width="132" height="8" rx="4" fill="#eeeef2"/>
+  <rect class="anim grow" style="animation-name:out" x="762" y="340" width="58" height="8" rx="4" fill="url(#brand)"/>
+
+  <!-- the answer goes back into the table -->
+  <path class="wire" d="M800 362 C800 440 700 446 660 446 L642 446 C628 446 626 420 626 366" stroke-dasharray="4 5" marker-end="url(#arr)"/>
+  <text x="740" y="462" font-size="11.5" class="muted" text-anchor="middle">fills in the ?</text>
+
+  <!-- particles (same d as the wires) -->
+  <g filter="url(#glow)">
+    <circle class="dot anim" r="4.5" fill="var(--blue)" style="offset-path:path('M110 176 C110 132 180 120 250 120 L420 120 C450 120 460 140 460 172');animation-name:d-top"/>
+    <circle class="dot anim" r="4.5" fill="var(--ink)" style="offset-path:path('M250 362 C250 396 300 404 360 404 L540 404 C570 404 578 390 578 366');animation-name:d-bottom"/>
+    <circle class="dot anim" r="4.5" fill="var(--green)" style="offset-path:path('M650 268 C668 268 672 252 690 252');animation-name:d-ex"/>
+    <circle class="dot anim" r="4.5" fill="var(--blue)" style="offset-path:path('M650 340 C668 340 672 316 690 316');animation-name:d-q"/>
+    <circle class="dot anim" r="4.5" fill="var(--violet)" style="offset-path:path('M800 362 C800 440 700 446 660 446 L642 446 C628 446 626 420 626 366');animation-name:d-back"/>
+  </g>
+  <!-- footer -->
+  <g transform="translate(30 482)">
+    <path transform="scale(1)" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" fill="var(--ink)"/>
+    <text x="24" y="12.5" font-size="13" font-weight="550">github.com/edamame-labs/tab-jev</text>
+  </g>
+</svg>
+</div>
