@@ -100,12 +100,20 @@ def jev_then_tab(
     rubrics: Rubrics | None = None,
     shots: int = 0,
     jev_columns: Sequence[str] | None = None,
+    fallback: bool = False,
 ) -> Pipeline:
-    """jev turns text into features and answers the target; tab predicts from all of it."""
+    """jev turns text into features and answers the target; tab predicts from all of it.
+
+    With few labels tab can do worse than jev's own answer. With `fallback`, the final prediction is
+    a weighted average of tab's and jev's, with weights chosen on out-of-fold predictions: it leans
+    on jev while labels are scarce and on tab once tab is the better one. It costs no extra jev
+    calls, but tab is fit once more per fold.
+    """
     jev = _cached(jev)
     features = [JevFeatures(jev, rubrics)] if rubrics else []
     answer = JevAnswer(jev, target, columns=jev_columns, shots=shots)
-    return Pipeline(target, [*features, answer, TabPredict(tab)])
+    blend = [Blend(["jev", "tab"])] if fallback else []
+    return Pipeline(target, [*features, answer, TabPredict(tab), *blend])
 
 
 def tab_then_jev(

@@ -196,6 +196,8 @@ Each part can be swapped on its own: any server that speaks Jev's `/v1/systemone
 
 On Kickstarter, `jev_then_tab` does best and `tab_then_jev` worst. See [demo/](demo/) for the evaluation.
 
+`jev_then_tab(..., fallback=True)` blends tab's prediction with jev's own answer, with weights chosen on out-of-fold predictions. With few labels, where tab can do worse than jev alone, it leans on jev.
+
 Or compose the steps yourself:
 
 ```python

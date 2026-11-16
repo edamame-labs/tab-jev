@@ -62,6 +62,21 @@ def test_tab_then_jev_examples_carry_out_of_fold_tab_predictions():
     assert set(state) == {"record", "model_predictions", "labeled_examples"}
 
 
+def test_jev_then_tab_fallback_leans_on_the_better_of_jev_and_tab():
+    X, _ = make_data(60)
+    jev_is_right = pd.Series(np.where(X["review"] == "good product", "yes", "no"))
+    pipeline = jev_then_tab(BUY, FakeJev(), UniformTab(), fallback=True).fit(X, jev_is_right)
+    assert pipeline.steps[-1].weights == {"jev": 1.0}  # a tab with no signal: the answer is jev's
+
+    tab_is_right = pd.Series(np.where(X["price"] < 50, "yes", "no"))
+    pipeline = jev_then_tab(BUY, FakeJev(), LogisticRegression(C=100), fallback=True).fit(X, tab_is_right)
+    assert pipeline.steps[-1].weights.get("tab", 0) >= 0.8
+    assert np.allclose(pipeline.predict_proba(X).sum(axis=1), 1)
+
+    no_labels = jev_then_tab(BUY, FakeJev(), UniformTab(), fallback=True).fit()
+    assert no_labels.steps[-1].weights == {"jev": 1.0}
+
+
 def test_blend_prefers_the_better_input():
     X, y = make_data(60)
     y = pd.Series(np.where(X["review"] == "good product", "yes", "no"))

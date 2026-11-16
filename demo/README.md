@@ -9,6 +9,7 @@ With the same test rows and label budgets (64, 256, 1,024, plus full-data baseli
 - a TFM on the tabular columns only
 - TF-IDF on the text plus the tabular columns, into logistic regression
 - tab-jev: jev reads the text, and tab learns from the tabular columns and jev's answers (jev → tab, tab → jev, blend)
+- jev → tab again with the rubric columns only, with jev's answer to the target only, and with the fallback on jev's own answer
 
 Near-duplicate projects are kept on one side of the test split. The labeled rows are drawn with three seeds, and the results show the mean and spread across them, plus every run with bootstrap 95% intervals. Metrics are AUC, average precision, accuracy, log loss and calibration error (ECE).
 
@@ -41,7 +42,7 @@ uv run --group demo python demo/eval_benchmark.py kickstarter cloud
 ## Run locally
 
 - jev: [Kev](https://github.com/jaredpalmer/kev) 0.8B, an open Jev reproduction (Apache-2.0) that serves Jev's `/v1/systemone` format on Apple Silicon.
-- tab: TabICL on the CPU.
+- tab: TabICL on this machine. It picks the GPU when one is available (MPS on Apple Silicon) and falls back to the CPU.
 
 ```bash
 git clone https://github.com/jaredpalmer/kev.git demo/kev
@@ -57,4 +58,19 @@ Then, in another terminal:
 uv run --group demo python demo/eval_benchmark.py kickstarter local
 ```
 
+## Run with the Jev API and a local tab
+
+- jev: TypeSafe's Jev API.
+- tab: TabICL on this machine, so only `TYPESAFE_API_KEY` is needed.
+
+```bash
+uv run --group demo python demo/eval_benchmark.py kickstarter hybrid
+```
+
 Jev answers are cached in `demo/cache/`, so a re-run only pays for new calls. Results go to `demo/results/`.
+
+## Results
+
+- [kickstarter_cloud_tabpfn.md](results/kickstarter_cloud_tabpfn.md): Jev API + TabPFN 3.5 API.
+- [kickstarter_hybrid_tabicl.md](results/kickstarter_hybrid_tabicl.md): Jev API + TabICL (2 estimators) on Apple Silicon.
+- [kickstarter_local_tabicl.md](results/kickstarter_local_tabicl.md): Kev 0.8B + TabICL (2 estimators) on Apple Silicon.
