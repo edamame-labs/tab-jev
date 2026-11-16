@@ -5,7 +5,9 @@ On the same test rows and label budgets, compares:
   TFM · tab                               the tab backend on the tabular columns alone
   TF-IDF + tab · LR                       logistic regression on TF-IDF text plus the tabular columns
   tab-jev                                 jev reads the text; tab learns from the tabular columns and
-                                          jev's answers (jev → tab, tab → jev, blend)
+                                          jev's answers (jev → tab, tab → jev, blend). jev → tab also
+                                          runs with the rubric columns only, with jev's answer to the
+                                          target only, and with the fallback on jev's own answer
 Every metric comes with a bootstrap 95% interval. Results go to demo/results/.
 
 Usage: uv run --group demo python demo/eval_benchmark.py kickstarter cloud
@@ -27,6 +29,7 @@ from sklearn.model_selection import StratifiedGroupKFold, train_test_split
 from tab_jev import (
     CachedJev,
     JevAnswer,
+    JevFeatures,
     JevHTTP,
     Pipeline,
     Question,
@@ -39,10 +42,12 @@ from tab_jev import (
 HERE = Path(__file__).parent
 
 SETUPS = {
-    # Everything local: Kev 0.8B (an open Jev reproduction) served on this machine, TabICL on the CPU.
+    # Everything local: Kev 0.8B (an open Jev reproduction) served on this machine, TabICL on this machine (GPU if it has one).
     "local": {"jev": "server", "url": "http://127.0.0.1:8009", "model": "kev-latest", "tab": "tabicl"},
     # Nothing heavy runs locally: TypeSafe's Jev API and Prior Labs' TabPFN 3.5 API.
     "cloud": {"jev": "typesafe", "url": None, "model": None, "tab": "tabpfn"},
+    # The real Jev through TypeSafe's API, with TabICL on this machine: needs only TYPESAFE_API_KEY.
+    "hybrid": {"jev": "typesafe", "url": None, "model": None, "tab": "tabicl"},
 }
 
 
@@ -80,7 +85,7 @@ def make_tab(kind: str, setup: str, seed: int):
         from tabicl import TabICLClassifier
 
         # fewer ensemble members keep a laptop cool; TABICL_ESTIMATORS overrides (Modal uses 8)
-        estimators = int(os.environ.get("TABICL_ESTIMATORS", 2 if setup == "local" else 8))
+        estimators = int(os.environ.get("TABICL_ESTIMATORS", 2 if setup in ("local", "hybrid") else 8))
         return lambda: TabICLClassifier(n_estimators=estimators, random_state=seed), f"TabICL ({estimators} estimators)"
     require("TABPFN_TOKEN")
     from tabpfn_client import TabPFNClassifier  # reads TABPFN_TOKEN
@@ -284,7 +289,7 @@ def main() -> None:
         row = {"labels": labels, "seed": seed, "method": method, **scores_with_intervals(y_test, p)}
         row.update(seconds=round(time.perf_counter() - start), **{"jev calls": jev.calls - calls})
         rows.append(row)
-        print(f"{labels:>6} labels  seed {seed}  {method:<28} AUC {row['AUC']}  AP {row['AP']}  "
+        print(f"{labels:>6} labels  seed {seed}  {method:<34} AUC {row['AUC']}  AP {row['AP']}  "
               f"log loss {row['log loss']}  ECE {row['ECE']}  {row['seconds']}s", flush=True)
 
     def run(labels: int, seed: int | str, method: str, predict) -> None:
@@ -292,7 +297,7 @@ def main() -> None:
         try:
             p = predict()
         except Exception as error:  # keep going; one backend failing should not lose the rest
-            print(f"{labels:>6} labels  seed {seed}  {method:<28} FAILED: {error!r}", flush=True)
+            print(f"{labels:>6} labels  seed {seed}  {method:<34} FAILED: {error!r}", flush=True)
             return
         record(labels, seed, method, p, start, calls)
 
@@ -324,6 +329,14 @@ def main() -> None:
                         target, jev, new_tab(), rubrics=data.rubrics, shots=args.shots, jev_columns=text
                     ),
                     "tab-jev: blend": lambda: parallel_blend(target, jev, new_tab(), rubrics=data.rubrics, jev_columns=text),
+                    # Which of jev's columns help tab, and does falling back on jev's own answer fix few labels?
+                    "tab-jev: jev → tab, rubrics only": lambda: Pipeline(
+                        target, [JevFeatures(jev, data.rubrics), TabPredict(new_tab())]
+                    ),
+                    "tab-jev: jev → tab, target only": lambda: jev_then_tab(target, jev, new_tab(), jev_columns=text),
+                    "tab-jev: jev → tab, fallback": lambda: jev_then_tab(
+                        target, jev, new_tab(), rubrics=data.rubrics, jev_columns=text, fallback=True
+                    ),
                 }
                 for method, build in methods.items():
 
